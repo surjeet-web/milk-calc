@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MilkCalc | Dairy Analytics</title>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #FE5D26;
+            --primary-light: #ff7e5f;
+            --secondary: #F2C078;
+            --light: #FAEDCA;
+            --accent: #C1DBB3;
+            --dark: #333333;
+            --gray: #777777;
+            --white: #ffffff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+        
+        /* Modern Navbar */
+        .navbar {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1200px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar.scrolled {
+            top: 10px;
+            padding: 10px 25px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        
+        .logo-icon {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-right: 10px;
+        }
+        
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            position: relative;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary);
+            transition: width 0.3s;
+        }
+        
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--primary);
+        }
+        
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.6rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(254, 93, 38, 0.3);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary);
+            cursor: pointer;
+        }
+        
+        /* Hero Section with Sliding Animation */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-content {
+            max-width: 600px;
+            z-index: 2;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2.5rem;
+            color: var(--gray);
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .hero-image {
+            position: absolute;
+            right: 5%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 45%;
+            max-width: 600px;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(-50%) translateX(0); }
+            50% { transform: translateY(-50%) translateX(-20px); }
+            100% { transform: translateY(-50%) translateX(0); }
+        }
+        
+        /* Calculator Section */
+        .section {
+            padding: 8rem 5%;
+            position: relative;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .section-title p {
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+        }
+        
+        .calculator-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+        
+        .calculator-tutorial {
+            padding: 3rem;
+            background-color: var(--accent);
+            position: relative;
+        }
+        
+        .chat-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .chat-message {
+            margin-bottom: 1.5rem;
+            max-width: 80%;
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            position: relative;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s forwards;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .chat-message:nth-child(1) { animation-delay: 0.3s; }
+        .chat-message:nth-child(2) { animation-delay: 1s; }
+        .chat-message:nth-child(3) { animation-delay: 1.7s; }
+        .chat-message:nth-child(4) { animation-delay: 2.4s; }
+        .chat-message:nth-child(5) { animation-delay: 3.1s; }
+        
+        .chat-message.user {
+            background-color: var(--white);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .chat-message.bot {
+            background-color: var(--primary);
+            color: var(--white);
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .calculator {
+            padding: 3rem;
+        }
+        
+        .calculator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .calculator-header h3 {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .calculator-tabs {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            background: none;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+        
+        .calculator-body {
+            margin-bottom: 2rem;
+        }
+        
+        .calculator-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .item-label {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .item-name {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        
+        .item-price {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid var(--primary);
+            background: none;
+            color: var(--primary);
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .quantity-btn:hover {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+        
+        .quantity-input {
+            width: 40px;
+            text-align: center;
+            border: none;
+            background: none;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .calculator-summary {
+            background-color: var(--light);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+        }
+        
+        .summary-total {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .calculator-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        /* Analytics Section */
+        .analytics-section {
+            background-color: var(--white);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            margin-top: 3rem;
+        }
+        
+        .analytics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .analytics-header h3 {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .time-filter {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: none;
+            border: 1px solid var(--primary);
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn.active {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+        
+        .chart-container {
+            margin-top: 2rem;
+            height: 300px;
+        }
+        
+        .saved-data-container {
+            margin-top: 3rem;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .data-table th {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .delete-btn {
+            color: #ff4d4f;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        /* Testimonials Section */
+        .testimonials-container {
+            display: flex;
+            gap: 2rem;
+            overflow-x: auto;
+            padding-bottom: 2rem;
+            scroll-snap-type: x mandatory;
+        }
+        
+        .testimonials-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .testimonials-container::-webkit-scrollbar-track {
+            background: var(--light);
+            border-radius: 10px;
+        }
+        
+        .testimonials-container::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+        
+        .testimonial-card {
+            min-width: 350px;
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            scroll-snap-align: start;
+            transition: transform 0.3s;
+        }
+        
+        .testimonial-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .testimonial-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .testimonial-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 1rem;
+            border: 3px solid var(--primary);
+        }
+        
+        .testimonial-author h4 {
+            margin-bottom: 0.3rem;
+        }
+        
+        .testimonial-author p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .testimonial-rating {
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-header h3 {
+            color: var(--primary);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: var(--white);
+            padding: 5rem 5% 2rem;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+        
+        .footer-column h4 {
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+            color: var(--white);
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--white);
+            transition: all 0.3s;
+        }
+        
+        .social-links a:hover {
+            background-color: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 1024px) {
+            .hero h1 {
+                font-size: 3rem;
+            }
+            
+            .calculator-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .calculator-tutorial {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .navbar {
+                top: 10px;
+                padding: 12px 20px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .hero {
+                padding-top: 80px;
+                text-align: center;
+                height: auto;
+                padding-bottom: 3rem;
+            }
+            
+            .hero-content {
+                margin: 0 auto;
+            }
+            
+            .hero-buttons {
+                justify-content: center;
+            }
+            
+            .hero-image {
+                position: relative;
+                right: auto;
+                top: auto;
+                transform: none;
+                width: 100%;
+                margin-top: 3rem;
+                animation: none;
+            }
+            
+            .section {
+                padding: 5rem 5%;
+            }
+            
+            .calculator-actions {
+                flex-direction: column;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .analytics-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .time-filter {
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Modern Navbar -->
+    <nav class="navbar">
+        <a href="#" class="logo">
+            <i class="fas fa-cow logo-icon"></i>
+            <span class="logo-text">MilkCalc</span>
+        </a>
+        <div class="nav-links">
+            <a href="#home" class="active">Home</a>
+            <a href="#calculator">Calculator</a>
+            <a href="#analytics">Analytics</a>
+            <a href="#testimonials">Testimonials</a>
+        </div>
+        <div class="nav-buttons">
+            <a href="#calculator" class="btn btn-primary">Try Calculator</a>
+        </div>
+        <button class="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home" data-aos="fade-in">
+        <div class="hero-content">
+            <h1>Track & Analyze Your Dairy Expenses</h1>
+            <p>Save every calculation, analyze your spending patterns, and optimize your dairy budget with our advanced analytics.</p>
+            <div class="hero-buttons">
+                <a href="#calculator" class="btn btn-primary">Start Calculating</a>
+                <a href="#analytics" class="btn btn-outline">View Analytics</a>
+            </div>
+        </div>
+        <img src="https://images.unsplash.com/photo-1550583724-b2692b85b150?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Milk Delivery" class="hero-image" data-aos="fade-left" data-aos-delay="300">
+    </section>
+
+    <!-- Calculator Section -->
+    <section class="section" id="calculator">
+        <div class="section-title" data-aos="fade-up">
+            <h2>Dairy Calculator</h2>
+            <p>Calculate your expenses and save them for future analysis</p>
+        </div>
+        <div class="calculator-container" data-aos="fade-up" data-aos-delay="200">
+            <div class="calculator-tutorial">
+                <div class="chat-container">
+                    <div class="chat-message user">How do I save my calculations?</div>
+                    <div class="chat-message bot">After calculating, click "Save Calculation" and give it a name. It will be stored for analytics!</div>
+                    <div class="chat-message user">Can I see my past data?</div>
+                    <div class="chat-message bot">Yes! All your saved data appears in the Analytics section with charts and trends.</div>
+                    <div class="chat-message bot">Your data stays private and is only stored in your browser.</div>
+                </div>
+            </div>
+            <div class="calculator">
+                <div class="calculator-header">
+                    <h3>Milk Packet Calculator</h3>
+                    <div class="calculator-tabs">
+                        <button class="tab-btn active" data-period="daily">Daily</button>
+                        <button class="tab-btn" data-period="weekly">Weekly</button>
+                        <button class="tab-btn" data-period="monthly">Monthly</button>
+                    </div>
+                </div>
+                <div class="calculator-body" id="calculatorBody">
+                    <!-- Items will be dynamically added here -->
+                </div>
+                <div class="calculator-summary" id="calculatorSummary">
+                    <div id="summaryItems">
+                        <!-- Summary items will be added here -->
+                    </div>
+                    <div class="summary-total">
+                        <span>Total</span>
+                        <span id="totalAmount">₹0.00</span>
+                    </div>
+                </div>
+                <div class="calculator-actions">
+                    <button class="btn btn-primary" id="saveCalculationBtn">Save Calculation</button>
+                    <button class="btn btn-outline" id="resetCalculatorBtn">Reset</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Analytics Section -->
+    <section class="section" id="analytics">
+        <div class="section-title" data-aos="fade-up">
+            <h2>Your Dairy Analytics</h2>
+            <p>View your saved calculations and analyze your spending patterns</p>
+        </div>
+        
+        <div class="analytics-section" data-aos="fade-up" data-aos-delay="200">
+            <div class="analytics-header">
+                <h3>Spending Trends</h3>
+                <div class="time-filter">
+                    <button class="filter-btn active" data-period="7days">Last 7 Days</button>
+                    <button class="filter-btn" data-period="30days">Last 30 Days</button>
+                    <button class="filter-btn" data-period="all">All Time</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="analyticsChart"></canvas>
+            </div>
+            
+            <div class="saved-data-container">
+                <h3>Your Saved Calculations</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Name</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="savedDataTable">
+                            <!-- Saved data will be dynamically added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="section" id="testimonials">
+        <div class="section-title" data-aos="fade-up">
+            <h2>What Our Users Say</h2>
+            <p>Thousands of families and businesses use MilkCalc daily</p>
+        </div>
+        <div class="testimonials-container">
+            <div class="testimonial-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="testimonial-header">
+                    <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Priya Sharma" class="testimonial-avatar">
+                    <div class="testimonial-author">
+                        <h4>Priya Sharma</h4>
+                        <p>Homemaker</p>
+                    </div>
+                </div>
+                <div class="testimonial-rating">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+                <p>"The analytics feature helped me reduce our dairy expenses by 15% by identifying patterns in our consumption."</p>
+            </div>
+            <div class="testimonial-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="testimonial-header">
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Raj Patel" class="testimonial-avatar">
+                    <div class="testimonial-author">
+                        <h4>Raj Patel</h4>
+                        <p>Tea Shop Owner</p>
+                    </div>
+                </div>
+                <div class="testimonial-rating">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+                <p>"Being able to save and compare daily calculations has transformed how I manage inventory and costs for my business."</p>
+            </div>
+            <div class="testimonial-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="testimonial-header">
+                    <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Ananya Gupta" class="testimonial-avatar">
+                    <div class="testimonial-author">
+                        <h4>Ananya Gupta</h4>
+                        <p>Working Professional</p>
+                    </div>
+                </div>
+                <div class="testimonial-rating">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star-half-alt"></i>
+                </div>
+                <p>"I love seeing my monthly trends and being able to look back at previous months to compare my spending."</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Save Calculation Modal -->
+    <div class="modal" id="saveModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Save Calculation</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="calculationName">Calculation Name</label>
+                    <input type="text" id="calculationName" placeholder="e.g. Weekly Purchase, Home Delivery">
+                </div>
+                <div class="form-group">
+                    <label for="calculationDate">Date</label>
+                    <input type="date" id="calculationDate">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline close-modal">Cancel</button>
+                <button class="btn btn-primary" id="confirmSaveBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h4>MilkCalc</h4>
+                <p>The modern dairy calculator with analytics that helps you track and manage your milk expenses.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h4>Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#calculator">Calculator</a></li>
+                    <li><a href="#analytics">Analytics</a></li>
+                    <li><a href="#testimonials">Testimonials</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Products</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Full Cream Milk</a></li>
+                    <li><a href="#">Half Cream Milk</a></li>
+                    <li><a href="#">Bachcha Milk</a></li>
+                    <li><a href="#">Dahi (Curd)</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Contact</h4>
+                <ul class="footer-links">
+                    <li><a href="mailto:hello@milkcalc.com">hello@milkcalc.com</a></li>
+                    <li><a href="tel:+919876543210">+91 98765 43210</a></li>
+                    <li>Mumbai, India</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 MilkCalc. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS animations
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+        
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+        
+        // Mobile menu toggle
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const navLinks = document.querySelector('.nav-links');
+        
+        mobileMenuBtn.addEventListener('click', function() {
+            navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    if (navLinks.style.display === 'flex') {
+                        navLinks.style.display = 'none';
+                    }
+                }
+            });
+        });
+
+        // Calculator Data and Functions
+        const dairyItems = [
+            { id: 'full-cream', name: 'Full Cream Milk', price: 34.75, unit: 'packet' },
+            { id: 'half-cream', name: 'Half Cream Milk', price: 29.75, unit: 'packet' },
+            { id: 'bachcha', name: 'Bachcha Milk', price: 9.00, unit: 'packet' },
+            { id: 'dahi', name: 'Dahi (Curd)', price: 18.00, unit: 'packet' },
+            { id: 'chhach', name: 'Chhach (Buttermilk)', price: 18.00, unit: 'packet' },
+            { id: 'bread', name: 'Fresh Bread', price: 9.00, unit: 'packet' }
+        ];
+
+        let currentQuantities = {};
+        let currentPeriod = 'daily';
+        let savedCalculations = JSON.parse(localStorage.getItem('milkCalcSavedData')) || [];
+
+        // Initialize calculator
+        function initCalculator() {
+            const calculatorBody = document.getElementById('calculatorBody');
+            calculatorBody.innerHTML = '';
+            
+            dairyItems.forEach(item => {
+                currentQuantities[item.id] = 0;
+                
+                const itemElement = document.createElement('div');
+                itemElement.className = 'calculator-item';
+                itemElement.innerHTML = `
+                    <div class="item-label">
+                        <span class="item-name">${item.name}</span>
+                        <span class="item-price">₹${item.price.toFixed(2)} per ${item.unit}</span>
+                    </div>
+                    <div class="item-quantity">
+                        <button class="quantity-btn" data-item="${item.id}" data-action="decrease">-</button>
+                        <input type="text" class="quantity-input" id="${item.id}-qty" value="0" data-item="${item.id}" readonly>
+                        <button class="quantity-btn" data-item="${item.id}" data-action="increase">+</button>
+                    </div>
+                `;
+                
+                calculatorBody.appendChild(itemElement);
+            });
+            
+            // Add event listeners to quantity buttons
+            document.querySelectorAll('.quantity-btn').forEach(btn => {
+                btn.addEventListener('click', handleQuantityChange);
+            });
+            
+            // Initialize date field with today's date
+            document.getElementById('calculationDate').valueAsDate = new Date();
+            
+            // Load saved data
+            renderSavedCalculations();
+            updateChart();
+        }
+
+        // Handle quantity changes
+        function handleQuantityChange(e) {
+            const itemId = this.getAttribute('data-item');
+            const action = this.getAttribute('data-action');
+            
+            if (action === 'increase') {
+                currentQuantities[itemId]++;
+            } else {
+                currentQuantities[itemId] = Math.max(0, currentQuantities[itemId] - 1);
+            }
+            
+            document.getElementById(`${itemId}-qty`).value = currentQuantities[itemId];
+            updateSummary();
+        }
+
+        // Update the summary section
+        function updateSummary() {
+            const summaryItems = document.getElementById('summaryItems');
+            summaryItems.innerHTML = '';
+            
+            let total = 0;
+            let hasItems = false;
+            
+            dairyItems.forEach(item => {
+                const quantity = currentQuantities[item.id];
+                if (quantity > 0) {
+                    hasItems = true;
+                    const itemTotal = quantity * item.price;
+                    total += itemTotal;
+                    
+                    const summaryItem = document.createElement('div');
+                    summaryItem.className = 'summary-item';
+                    summaryItem.innerHTML = `
+                        <span>${item.name} (${quantity} × ₹${item.price.toFixed(2)})</span>
+                        <span>₹${itemTotal.toFixed(2)}</span>
+                    `;
+                    summaryItems.appendChild(summaryItem);
+                }
+            });
+            
+            if (!hasItems) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'summary-item';
+                emptyMessage.textContent = 'No items selected';
+                summaryItems.appendChild(emptyMessage);
+            }
+            
+            document.getElementById('totalAmount').textContent = `₹${total.toFixed(2)}`;
+        }
+
+        // Reset calculator
+        function resetCalculator() {
+            dairyItems.forEach(item => {
+                currentQuantities[item.id] = 0;
+                document.getElementById(`${item.id}-qty`).value = 0;
+            });
+            updateSummary();
+        }
+
+        // Save calculation
+        function saveCalculation() {
+            const name = document.getElementById('calculationName').value.trim();
+            const date = document.getElementById('calculationDate').value;
+            
+            if (!name) {
+                alert('Please enter a name for this calculation');
+                return;
+            }
+            
+            if (!date) {
+                alert('Please select a date');
+                return;
+            }
+            
+            // Calculate totals
+            let items = [];
+            let total = 0;
+            
+            dairyItems.forEach(item => {
+                const quantity = currentQuantities[item.id];
+                if (quantity > 0) {
+                    items.push({
+                        id: item.id,
+                        name: item.name,
+                        quantity: quantity,
+                        price: item.price,
+                        total: quantity * item.price
+                    });
+                    total += quantity * item.price;
+                }
+            });
+            
+            if (items.length === 0) {
+                alert('Please add at least one item before saving');
+                return;
+            }
+            
+            // Create calculation object
+            const calculation = {
+                id: Date.now(),
+                name: name,
+                date: date,
+                period: currentPeriod,
+                items: items,
+                total: total,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Add to saved calculations
+            savedCalculations.push(calculation);
+            localStorage.setItem('milkCalcSavedData', JSON.stringify(savedCalculations));
+            
+            // Close modal and reset
+            closeModal();
+            resetCalculator();
+            
+            // Update analytics
+            renderSavedCalculations();
+            updateChart();
+            
+            alert('Calculation saved successfully!');
+        }
+
+        // Render saved calculations table
+        function renderSavedCalculations() {
+            const tableBody = document.getElementById('savedDataTable');
+            tableBody.innerHTML = '';
+            
+            if (savedCalculations.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="4" style="text-align: center;">No saved calculations yet</td>`;
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            // Sort by date (newest first)
+            const sortedCalculations = [...savedCalculations].sort((a, b) => 
+                new Date(b.date) - new Date(a.date)
+            );
+            
+            sortedCalculations.forEach(calc => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(calc.date).toLocaleDateString()}</td>
+                    <td>${calc.name}</td>
+                    <td>₹${calc.total.toFixed(2)}</td>
+                    <td><button class="delete-btn" data-id="${calc.id}"><i class="fas fa-trash"></i></button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', deleteCalculation);
+            });
+        }
+
+        // Delete a calculation
+        function deleteCalculation() {
+            const id = parseInt(this.getAttribute('data-id'));
+            if (confirm('Are you sure you want to delete this calculation?')) {
+                savedCalculations = savedCalculations.filter(calc => calc.id !== id);
+                localStorage.setItem('milkCalcSavedData', JSON.stringify(savedCalculations));
+                renderSavedCalculations();
+                updateChart();
+            }
+        }
+
+        // Update the analytics chart
+        function updateChart(period = '7days') {
+            let filteredData = [...savedCalculations];
+            const now = new Date();
+            
+            if (period === '7days') {
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(now.getDate() - 7);
+                filteredData = filteredData.filter(calc => new Date(calc.date) >= sevenDaysAgo);
+            } else if (period === '30days') {
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(now.getDate() - 30);
+                filteredData = filteredData.filter(calc => new Date(calc.date) >= thirtyDaysAgo);
+            }
+            
+            // Sort by date
+            filteredData.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // Prepare chart data
+            const labels = filteredData.map(calc => 
+                new Date(calc.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+            );
+            const totals = filteredData.map(calc => calc.total);
+            
+            // Get chart canvas
+            const ctx = document.getElementById('analyticsChart').getContext('2d');
+            
+            // Destroy previous chart if it exists
+            if (window.analyticsChart) {
+                window.analyticsChart.destroy();
+            }
+            
+            // Create new chart
+            window.analyticsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Spending (₹)',
+                        data: totals,
+                        backgroundColor: 'rgba(254, 93, 38, 0.2)',
+                        borderColor: 'rgba(254, 93, 38, 1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Total: ₹' + context.raw.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Modal functions
+        function openModal() {
+            document.getElementById('saveModal').style.display = 'flex';
+            document.getElementById('calculationName').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('saveModal').style.display = 'none';
+            document.getElementById('calculationName').value = '';
+        }
+
+        // Event listeners
+        document.getElementById('saveCalculationBtn').addEventListener('click', openModal);
+        document.getElementById('resetCalculatorBtn').addEventListener('click', resetCalculator);
+        document.getElementById('confirmSaveBtn').addEventListener('click', saveCalculation);
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', closeModal);
+        });
+        
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentPeriod = this.getAttribute('data-period');
+            });
+        });
+        
+        // Time filter for analytics
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                updateChart(this.getAttribute('data-period'));
+            });
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === document.getElementById('saveModal')) {
+                closeModal();
+            }
+        });
+
+        // Initialize the calculator when the page loads
+        document.addEventListener('DOMContentLoaded', initCalculator);
+    </script>
+</body>
+</html>
